@@ -13,7 +13,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import base64
 from PIL import Image   
-
+import time
+import atexit
+from datetime import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__, template_folder = 'templates')
 app.config['SECRET_KEY'] = 'top-secret!'
@@ -99,6 +102,35 @@ def fetch_expenses() :
     # print(expenses)
     return expenses
 
+def fetch_rec_expenses_cron():
+    sql = 'SELECT * FROM PETA_REC_EXPENSES;'
+    stmt = ibm_db.exec_immediate(conn, sql)
+    rec_expenses = []
+    while ibm_db.fetch_row(stmt) != False:
+        amt = ibm_db.result(stmt, "AMOUNT")
+        amt = str(amt)
+        description = ibm_db.result(stmt, "DESCRIPTION")
+        userid = ibm_db.result(stmt, "USERID")
+        date = ibm_db.result(stmt, "RECDATE")
+        rec_expenses.append([amt, description, date, userid])
+    # print(rec_expenses)
+    return rec_expenses
+
+def fetch_rec_expenses() :
+    sql = 'SELECT * FROM PETA_REC_EXPENSES WHERE USERID = ' + str(USERID)
+    stmt = ibm_db.exec_immediate(conn, sql)
+
+    rec_expenses = []
+    while ibm_db.fetch_row(stmt) != False:
+        amt = ibm_db.result(stmt, "AMOUNT")
+        amt = str(amt)
+        description = ibm_db.result(stmt, "DESCRIPTION")
+        userid = ibm_db.result(stmt, "USERID")
+        date = ibm_db.result(stmt, "RECDATE")
+        rec_expenses.append([amt, description, date, userid])
+    # print(rec_expenses)
+    return rec_expenses
+
 def fetch_limits():
     return range(1000,12001,1000)
 
@@ -182,11 +214,73 @@ def draw_graph2(expenses, limits):
 
     return encoded_img_data
 
+#finds the category id that matches that of the recurring expense category 
+def fetch_recurring_category_id() : 
+    categories = fetch_categories()
+    for category in categories :
+        p = ''
+        for i in category[1] :
+            if (i == ' ') : break
+            p += i
+        category[1] = p
+    print(categories)
+    categoryid = -1
+    for category in categories :
+        if category[1] == 'recurring' : categoryid = category[0]
+    print(categoryid)
+    return categoryid
+
+
+# cron to autodeduct the expenses each day
+def auto_renew():
+    global USERID
+    # print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+    rec_expenses = fetch_rec_expenses_cron()
+    print(rec_expenses)
+    current_day = time.strftime("%d")
+    print(current_day)
+    for expense in rec_expenses:
+        here = str(expense[2])
+        here = here.split('-')
+        here = here[2]
+        print(here)
+        if (here == current_day) :
+            sql="INSERT INTO PETA_EXPENSE(USERID, EXPENSE_AMOUNT, CATEGORYID, DESCRIPTION, DATE) VALUES(?,?,?,?,?);"
+            USERID = str(expense[3])
+            categoryid = fetch_recurring_category_id()
+            print(categoryid)
+            stmt=ibm_db.prepare(conn,sql)
+            ibm_db.bind_param(stmt,1,expense[3])
+            ibm_db.bind_param(stmt,2,expense[0])
+            ibm_db.bind_param(stmt, 3, categoryid)
+            ibm_db.bind_param(stmt,4,expense[1])
+            d3 = time.strftime("%Y-%m-%d")
+            ibm_db.bind_param(stmt,5,d3)
+            print(d3, categoryid, expense[0], expense[1], expense[2], expense[3])
+            ibm_db.execute(stmt)
+            # print(here, d3, expense[0], expense[1], expense[2])
+            sql = "UPDATE PETA_USER SET WALLET = WALLET - ? WHERE USERID = ?";
+            statement = ibm_db.prepare(conn, sql)
+            print(USERID)
+            ibm_db.bind_param(statement, 1, expense[0])
+            ibm_db.bind_param(statement, 2, expense[3])
+            print("deducted")
+            ibm_db.execute(statement)
+
+# caller code for the cron
+scheduler = BackgroundScheduler()
+scheduler.add_job(func = auto_renew, trigger="interval", seconds = 3600 * 24)
+scheduler.start()
+
+atexit.register(lambda: scheduler.shutdown())
+
 
 # END POINTS #
 @app.route('/', methods=['GET', 'POST'])
 @cross_origin()
 def registration():
+    global EMAIL
+    print("hello")
     if request.method=='GET':
         return render_template('registration.html')
     if request.method=='POST':
@@ -199,22 +293,25 @@ def registration():
         ibm_db.bind_param(stmt,1,email)
         ibm_db.bind_param(stmt,2,password)
         ibm_db.bind_param(stmt,3,wallet)
+        print(stmt)
         ibm_db.execute(stmt)
-        msg = Message('Registration Verfication',recipients=[email])
-        msg.body = ('Congratulations! Welcome user!')
-        msg.html = ('<h1>Registration Verfication</h1>'
-                    '<p>Congratulations! Welcome user!' 
-                    '<b>PETA</b>!</p>')
-        mail.send(msg)
+        # msg = Message('Registration Verfication',recipients=[email])
+        # msg.body = ('Congratulations! Welcome user!')
+        # msg.html = ('<h1>Registration Verfication</h1>'
+        #             '<p>Congratulations! Welcome user!' 
+        #             '<b>PETA</b>!</p>')
+        # mail.send(msg)
         EMAIL = email
     return redirect(url_for('dashboard'))
 
 @app.route('/login',methods=['GET','POST'])
 def login():
     global EMAIL
+    print("login")
     if request.method=='POST':
         email=request.form['email']
         EMAIL=email
+        print(EMAIL)
         password=request.form['password']
         sql="SELECT * FROM PETA_USER WHERE email=? AND password=?"
         stmt=ibm_db.prepare(conn,sql)
@@ -233,11 +330,13 @@ def login():
 def dashboard():
     global USERID
     global EMAIL
+    print("dashboard")
     if USERID=='' and EMAIL=='':
+        print("null email")
         return render_template('login.html')
     elif USERID=='':
         USERID=fetch_userID()
-    
+        print(USERID)
     expenses = fetch_expenses()
     wallet = fetch_walletamount()
     return render_template('dashboard.html', expenses = expenses, wallet = wallet, email = EMAIL)
@@ -335,7 +434,7 @@ def add_expense():
         ibm_db.bind_param(stmt,5,description)
         ibm_db.bind_param(stmt,6,date)
         ibm_db.execute(stmt)
-
+        print(date, amount_spent, category_id)
         sql = "UPDATE PETA_USER SET WALLET = WALLET - ? WHERE USERID = ?";
         statement = ibm_db.prepare(conn, sql)
         ibm_db.bind_param(statement, 1, amount_spent)
@@ -344,6 +443,103 @@ def add_expense():
     
         return redirect(url_for('dashboard'))
        
+@app.route('/viewrecurring', methods=['GET'])
+def viewrecurring():
+    global USERID
+    global EMAIL
+    print("viewrecurring")
+    if USERID=='' and EMAIL=='':
+        print("null email")
+        return render_template('login.html')
+    elif USERID=='':
+        USERID=fetch_userID()
+        # print(USERID)
+    print(USERID)
+    expenses = fetch_rec_expenses()
+    wallet = fetch_walletamount()
+    return render_template('viewrecurring.html', expenses = expenses, wallet = wallet, email = EMAIL)
+
+@app.route('/recurringexpense', methods=['GET', 'POST'])
+def recurring_expense():
+    global USERID, EMAIL
+    if request.method=='GET':
+        groups = fetch_groups()
+        categories = fetch_categories()
+        if len(categories) == 0:
+            return redirect(url_for('add_category'))
+        USERID = fetch_userID()
+        # check if user has added a category for recurring category, if not redirect and ask her to
+        recur_id = fetch_recurring_category_id()
+        if (recur_id == -1) :
+            return(redirect(url_for('add_category')))
+        return render_template('recurringexpense.html', categories=categories, groups=groups)
+
+    elif request.method=='POST':
+        if EMAIL == '':
+            return render_template('login.html', msg='Login before proceeding')
+        if(USERID==''):
+            # get user using email
+            USERID = fetch_userID()
+            # check if user has added a category for recurring category, if not redirect and ask her to
+            recur_id = fetch_recurring_category_id()
+            if (recur_id == -1) :
+                return(redirect(url_for('add_category')))
+        amount_spent = request.form['amountspent']
+        category_id = request.form.get('category')
+        description = request.form['description']
+        date = request.form['date']
+        # months = request.form['autorenewals']
+        # groupid = request.form.get('group')
+        print("recurring : ")
+        print(amount_spent, description, date, USERID)
+
+        sql="INSERT INTO PETA_REC_EXPENSES(AMOUNT, RECDATE, USERID, DESCRIPTION) VALUES (?,?,?,?)"
+        stmt=ibm_db.prepare(conn,sql)
+        ibm_db.bind_param(stmt,1,amount_spent)
+        ibm_db.bind_param(stmt,2,date)
+        ibm_db.bind_param(stmt,3,USERID)
+        ibm_db.bind_param(stmt,4, description)
+        ibm_db.execute(stmt)
+
+        sql="INSERT INTO PETA_EXPENSE(USERID, EXPENSE_AMOUNT, CATEGORYID, DESCRIPTION, DATE) VALUES(?,?,?,?,?)"
+        stmt=ibm_db.prepare(conn,sql)
+        ibm_db.bind_param(stmt,1,USERID)
+        ibm_db.bind_param(stmt,2,amount_spent)
+        ibm_db.bind_param(stmt,3, category_id)
+        ibm_db.bind_param(stmt,4,description)
+        ibm_db.bind_param(stmt,5,date)
+        ibm_db.execute(stmt)
+
+        sql = "UPDATE PETA_USER SET WALLET = WALLET - ? WHERE USERID = ?;"
+        statement = ibm_db.prepare(conn, sql)
+        ibm_db.bind_param(statement, 1, amount_spent)
+        ibm_db.bind_param(statement, 2, USERID)
+        ibm_db.execute(statement)
+
+        return redirect(url_for('dashboard'))
+
+@app.route('/removerecurring', methods=['POST'])
+def remove_recurring():
+    print("remove recurring")
+    if request.method == 'POST':
+        global EMAIL
+        global USERID
+        if EMAIL == '':
+            return render_template('login.html', msg='Login before proceeding')
+        if(USERID==''):
+            # get user using email
+            USERID = fetch_userID()
+        description = request.form['description']
+        print(description, USERID)
+        sql = 'DELETE FROM PETA_REC_EXPENSES WHERE USERID = ? AND DESCRIPTION = ?;'
+        stmt=ibm_db.prepare(conn,sql)
+        ibm_db.bind_param(stmt,1,USERID)
+        ibm_db.bind_param(stmt,2, description)
+        ibm_db.execute(stmt)
+
+        return redirect(url_for('dashboard'))
+
+
 @app.route('/analysis', methods=['GET','POST'])
 def analyse():
     if request.method=='GET':
