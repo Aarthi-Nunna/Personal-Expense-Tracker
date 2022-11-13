@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- bootstrap for the cards -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    {% block title %}
+        <title>Base Template</title> 
+    {% endblock title %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0" style="background-color: #B2D3C2">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 min-vh-100" style="color:black">
+                    <p class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline" style="color:black; font-weight: bold;">Personal Expense Tracker</span>
+                        <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/piggybank.png" style="width:50px;height: 50px;">
+                    </p>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'dashboard'}}; height: 50px; width: 150px; border-radius: 5px;">
+                            <a href="dashboard" class="nav-link align-middle px-0" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/house-outline.svg" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Home</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'addexpense'}};">
+                            <a href="addexpense" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/pay-15.png" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Add Expense</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'recurringexpense'}};">
+                            <a href="recurringexpense" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/pay-15.png" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Initiate a recurring expense</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'modifyexpense'}};">
+                            <a href="modifyexpense" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/edit_icon.svg" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Modify Expense</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'viewrecurring'}};">
+                            <a href="viewrecurring" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/graph.png" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">View recurring expenses</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'analysis'}};">
+                            <a href="analysis" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/graph.png" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">View Analysis</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'rewards'}};">
+                            <a href="rewards" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/reward.png" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Rewards & Goals</span>
+                            </a>
+                        </li>                        
+
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'addcategory'}};">
+                            <a href="addcategory" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/category_add.webp" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Create category</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'setmonthlylimit'}};">
+                            <a href="setmonthlylimit" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/category_add.webp" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Set Monthly Limit</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            {% block content %}
+                <h1>This needs to be overriden</h1>
+            {% endblock content %}
+        </div>
+    </div>
+    
+    {% block script %}
+    <script></script>
+    {% endblock script %}
+</body>
+</html>
