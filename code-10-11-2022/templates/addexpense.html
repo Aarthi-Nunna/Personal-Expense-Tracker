@@ -19,27 +19,28 @@
                     <div class="mb-3">
                         <label for="amountspent" class="form-label">Amount Spent: (Rs) </label>
                         <input type="number" class="form-control" name="amountspent" id="amountspent" placeholder="100.00" required>
-                        </div>
-                        <div class="mb-3">
+                    </div>
+                    <div class="mb-3">
                         <label for="expensecategory" class="form-label">Expense Category: </label>
-                        <select name="category" id="category" class="form-control" placeholder="Select a category">
+                        <select name="category" id="category" class="form-control" placeholder="Select a category" required>
                             <option value="">Select a category</option>
                             {% for cat in categories %}
                                 <option value="{{ cat[0] }}">{{ cat[1] }}</option>
                             {% endfor %}
                         </select>
-                        </div>
-                        <div class="mb-3">
+                    </div>
+                    <div class="mb-3">
                         <label for="date" class="form-label">Date of Expense: </label>
                         <input type="date" class="form-control" name="date" id="date" required></input>
-                        </div>
-                        <div class="mb-3">
+                    </div>
+                    <div class="mb-3">
                         <label for="description" class="form-label">Description of Expense: </label>
                         <input type="text" class="form-control" name="description" id="description"></input>
-                        </div>
-                        <div class="mb-3">
+                    </div>
+                    <div class="mb-3">
                         <label for="group" class="form-label">Group(if needed): </label>
-                        <div title="New group" style="float:right" value="Create group" onclick="addGroup()">ADD GROUP</div><br/>
+                        <div title="New group" style="float:right" value="Create group" onclick="addGroup()">ADD GROUP</div>
+                        <br/>
                         
                         <select name="group" id="group" class="form-control">
                             <option value="">Select existing group</option>
@@ -47,7 +48,7 @@
                                 <option value="{{ group[0] }}">{{ group[1] }}</option>
                             {% endfor %}
                         </select>
-                        </div>
+                    </div>
                 </div>
                 <div class="card-footer text-muted" style="text-align:center">
                     <button type="submit" value="submit" style="background-color:#00AD83; border-color:#00AD83; border-radius:5px;">Submit Expense</button>

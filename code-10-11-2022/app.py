@@ -482,10 +482,13 @@ def add_expense():
 
         amount_spent = request.form['amountspent']
         category_id = request.form.get('category')
-        description = request.form['description']
+        description = request.form.get('description')
         date = request.form['date']
+
         groupid = request.form.get('group')
-        # print(amount_spent, category_id, description, date, groupid, USERID)
+        groupid = None if groupid == '' else groupid
+
+        print(amount_spent, category_id, description, date, groupid, USERID)
 
         sql = "INSERT INTO PETA_EXPENSE(USERID, EXPENSE_AMOUNT, CATEGORYID, GROUPID, DESCRIPTION, DATE) VALUES(?,?,?,?,?,?)"
         stmt = ibm_db.prepare(conn, sql)
