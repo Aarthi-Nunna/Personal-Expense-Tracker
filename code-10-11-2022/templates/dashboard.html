@@ -19,20 +19,26 @@
     </div>
     <h3>Here are your expenses:</h3>
     <div class="card-deck">
-        <!-- {% set count = 1 %} -->
         {% for expense in expenses %}
-
         <div class="card shadow-lg bg-white rounded" style="margin: 20px;width:20rem; height:20rem;">
             <div class="card-header" style="text-align: center;">
                 <h4>Expense {{loop.index}}</h4>
             </div>
             <div class="card-body">
-                <h6 class="card-text">Amount Spent: <span style="color:#00AD83"> Rs {{expense[0]}}</span> 
-                    <br><br>Reason: <span style="color:#00AD83">{{expense[2]}}</span>
-                <br><br>Category: <span style="color:#00AD83">{{expense[3]}}</span></h6>
+                <h6 class="card-text">
+                    Amount Spent: 
+                    <span style="color:#00AD83"> Rs {{expense['EXPENSE_AMOUNT']}}</span> 
+                    <br><br>
+                    Description: 
+                    <span style="color:#00AD83">{{expense['DESCRIPTION']}}</span>
+                    <br><br>
+                    Category: 
+                    <span style="color:#00AD83">{{expense['CATEGORY_NAME']}}</span>
+                </h6>
+                <a href="/modifyexpense?expenseid={{expense['EXPENSEID']}}">Modify</a>
             </div>
             <div class="card-footer text-muted" style="text-align:center">
-                <h6>Date on which Expense was made: <span style="color:#00AD83">{{expense[1]}}</span></h6>
+                <h6>Date on which Expense was made: <span style="color:#00AD83">{{expense['DATE']}}</span></h6>
             </div>
         </div>
         {% endfor %}

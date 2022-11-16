@@ -99,7 +99,7 @@ def fetch_expenses():
     # print(sql)
     stmt = ibm_db.exec_immediate(conn, sql)
     expenses = []
-    while ibm_db.fetch_row(stmt) != False:
+    while ibm_db.fetch_row(stmt):
         category_id = ibm_db.result(stmt, "CATEGORYID")
         category_id = str(category_id)
         sql2 = "SELECT * FROM PETA_CATEGORY WHERE CATEGORYID = " + category_id
@@ -303,12 +303,12 @@ def auto_renew():
 # caller code for the cron
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=auto_renew, trigger="interval", seconds=3600 * 24)
-scheduler.start()
 
+# END POINTS #
+scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
 
-# END POINTS #
 @app.route('/', methods=['GET', 'POST'])
 @cross_origin()
 def registration():
@@ -328,7 +328,7 @@ def registration():
         ibm_db.bind_param(stmt, 3, wallet)
         print(stmt)
         ibm_db.execute(stmt)
-        # msg = Message('Registration Verfication',recipients=[email])
+        # msg = Message('Registration Verfication',recipients=[EMAIL])
         # msg.body = ('Congratulations! Welcome user!')
         # msg.html = ('<h1>Registration Verfication</h1>'
         #             '<p>Congratulations! Welcome user!'
@@ -361,6 +361,16 @@ def login():
         return render_template('login.html')
 
 
+@app.route('/logout', methods=['GET'])
+def logout():
+    if request.method == 'GET':
+        global USERID
+        global EMAIL
+        USERID = ""
+        EMAIL = ""
+        return redirect(url_for('login'))
+
+
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     global USERID
@@ -372,7 +382,18 @@ def dashboard():
     elif USERID == '':
         USERID = fetch_userID()
         print(USERID)
-    expenses = fetch_expenses()
+
+    sql = "SELECT EXPENSEID, EXPENSE_AMOUNT, DESCRIPTION, CATEGORY_NAME, DATE FROM PETA_EXPENSE, PETA_CATEGORY WHERE PETA_EXPENSE.USERID = ? AND PETA_EXPENSE.CATEGORYID = PETA_CATEGORY.CATEGORYID"
+    statement = execute_sql(sql, USERID)
+
+    expenses = []
+    while True:
+        expense = ibm_db.fetch_assoc(statement)
+        if expense:
+            expenses.append(expense)
+        else:
+            break
+
     wallet = fetch_walletamount()
     return render_template('dashboard.html', expenses=expenses, wallet=wallet, email=EMAIL)
 
@@ -616,8 +637,7 @@ def check_monthly_limit(month, year):
 
     if amt_spent and monthly_limit and int(amt_spent[0]) > int(monthly_limit[0]):
         diff = int(amt_spent[0]) - int(monthly_limit[0])
-        print(diff)
-        msg = Message('Monthly limit exceeded', recipients=[email])
+        msg = Message('Monthly limit exceeded', recipients=[EMAIL])
         msg.body = (
             f'Monthly limit exceeded by {diff} for the month of {month}, {year}')
         mail.send(msg)
@@ -647,6 +667,97 @@ def set_monthly_limit():
         update_monthly_limit(new_monthly_limit, now.month, now.year)
         return redirect(url_for('dashboard'))
 
+
+@app.route('/modifyexpense', methods=['GET', 'POST'])
+def modify_expense():
+    if request.method == 'GET':
+        expenseid = request.args.get('expenseid')
+        sql = "SELECT * FROM PETA_EXPENSE WHERE EXPENSEID = ?"
+        statement = execute_sql(sql, expenseid)
+        expense = ibm_db.fetch_assoc(statement)
+        categories = fetch_categories()
+        groups = fetch_groups()
+        return render_template('modifyexpense.html', expense=expense, categories=categories, groups=groups)
+    elif request.method == 'POST':
+        amount_spent = request.form['amountspent']
+        category_id = request.form.get('category')
+        description = request.form['description']
+        date = request.form['date']
+        groupid = request.form.get('group')
+
+        expenseid = request.form['expenseid']
+        old_amount_spent = request.form['oldamountspent']
+
+        sql = "UPDATE PETA_EXPENSE SET EXPENSE_AMOUNT = ?, CATEGORYID = ?, GROUPID = ?, DESCRIPTION = ?, DATE = ? WHERE EXPENSEID = ?"
+        execute_sql(sql, amount_spent, category_id,
+                    groupid, description, date, expenseid)
+
+        sql = "UPDATE PETA_USER SET WALLET = WALLET + ?"
+        execute_sql(sql, float(old_amount_spent) - float(amount_spent))
+
+        return redirect(url_for('dashboard'))
+
+
+def fetch_goals():
+    sql = 'SELECT * FROM PETA_GOALS WHERE USERID = ?'
+    statement = execute_sql(sql, USERID)
+
+    goals = []
+    while True:
+        goal = ibm_db.fetch_tuple(statement)
+        if goal:
+            goals.append(goal[2:])
+        else:
+            break
+
+    print(goals)
+    return goals
+
+
+@app.route('/rewards', methods=['GET'])
+def rewards_and_goals():
+    goals = fetch_goals()
+    return render_template('rewards.html', goals=goals)
+
+
+@app.route('/addgoal', methods=['GET', 'POST'])
+def add_goal():
+    if request.method == 'GET':
+        return render_template('addgoal.html')
+    elif request.method == 'POST':
+        goal_amount = request.form['goal_amount']
+        date = request.form['date']
+        reward = request.form['reward']
+        sql = "INSERT INTO PETA_GOALS(USERID, GOAL_AMOUNT, DATE, REWARD) VALUES(?, ?, ?, ?)"
+        execute_sql(sql, USERID, goal_amount, date, reward)
+        return redirect(url_for('dashboard'))
+
+
+def check_goals():
+    sql = "SELECT A.GOALID, A.USERID, A.GOAL_AMOUNT, A.DATE, A.REWARD, B.WALLET FROM PETA_GOALS AS A, PETA_USER AS B WHERE A.USERID = B.USERID"
+    statement = execute_sql(sql)
+
+    now = datetime.now()
+    while True:
+        row = ibm_db.fetch_assoc(statement)
+        if not row:
+            break
+        if row['DATE'] == now:
+            if row['GOAL_AMOUNT'] <= row['WALLET']:
+                msg = Message('Goal achieved!', recipients=[EMAIL])
+                msg.body = (
+                    f'You are eligible for your reward:\n{row["REWARD"]}')
+                mail.send(msg)
+            else:
+                msg = Message('Goal limit exceeded', recipients=[EMAIL])
+                msg.body = (
+                    f'You are not eligible for the reward:\n{row["REWARD"]}\nBetter luck next time!')
+                mail.send(msg)
+            sql = "DELETE FROM PETA_GOALS WHERE GOALID = ?"
+            execute_sql(sql, row['GOALID'])
+
+
+scheduler.add_job(func=check_goals, trigger="interval", seconds=3600 * 24)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

@@ -49,12 +49,12 @@
                             </a>
                         </li>
 
-                        <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'modifyexpense'}};">
+                        <!-- <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'modifyexpense'}};">
                             <a href="modifyexpense" class="nav-link px-0 align-middle" style="color:black;">
                                 <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/edit_icon.svg" style="width:20px;height:20px;margin-left: 5px;">
                                 <span class="ms-1 d-none d-sm-inline">Modify Expense</span>
                             </a>
-                        </li>
+                        </li> -->
                         
                         <li class="nav-item mt-2" style="background-color: {{'#00AD83' if highlight == 'viewrecurring'}};">
                             <a href="viewrecurring" class="nav-link px-0 align-middle" style="color:black;">
@@ -91,6 +91,16 @@
                             </a>
                         </li>
                     </ul>
+
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-end" id="menu">
+                        <li class="nav-item mt-2">
+                            <a href="logout" class="nav-link px-0 align-middle" style="color:black;">
+                                <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/log-out.png" style="width:20px;height:20px;margin-left: 5px;">
+                                <span class="ms-1 d-none d-sm-inline">Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+
                 </div>
             </div>
             {% block content %}
