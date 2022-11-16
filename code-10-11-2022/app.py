@@ -290,6 +290,8 @@ def auto_renew():
             print(d3, categoryid, expense[0],
                   expense[1], expense[2], expense[3])
             ibm_db.execute(stmt)
+
+            check_monthly_limit(datetime.now().month, datetime.now().year)
             # print(here, d3, expense[0], expense[1], expense[2])
             sql = "UPDATE PETA_USER SET WALLET = WALLET - ? WHERE USERID = ?"
             statement = ibm_db.prepare(conn, sql)
