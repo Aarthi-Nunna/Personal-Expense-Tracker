@@ -1,0 +1,41 @@
+{% extends 'base_template.html' %}
+
+{% block title %}
+<title>Goals and Rewards</title>
+{% endblock title %}
+
+{% set highlight = 'rewards' %}
+
+{% block content %}
+
+<div class="col py-3" style="background-color:#00AD83">
+    
+    <h3>Here are your current rewards and goals:</h3>
+    <div class="card-deck">
+        <!-- {% set count = 1 %} -->
+        {% for goal in goals %}
+
+        <div class="card shadow-lg bg-white rounded" style="margin: 20px;width:20rem; height:20rem;">
+            <div class="card-header" style="text-align: center;">
+                <h4>Goal and Reward {{loop.index}}</h4>
+            </div>
+            <div class="card-body">
+                <h6 class="card-text">Amount Set: <span style="color:#00AD83"> Rs {{goal[0]}}</span> 
+                <br><br>Reward: <span style="color:#00AD83">{{goal[2]}}</span></h6>
+            </div>
+            <div class="card-footer text-muted" style="text-align:center">
+                <h6><br><br>Date of Validity: <span style="color:#00AD83">{{goal[1]}}</span></h6>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="text-align: center; margin-top: 5px">
+        <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/goal-icon.webp"
+            style="margin-left:5px; height:30px; width:30px;">
+        <a href="addgoal" style="color:black; text-decoration:none;"><h4 style="display: inline">Add Goal and Reward</h4></a>
+    </div>
+
+
+</div>
+{% endblock content %}

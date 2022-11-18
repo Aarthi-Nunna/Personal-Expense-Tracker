@@ -1,0 +1,37 @@
+{% extends 'base_template.html' %}
+
+{% block title %}
+<title>Add Category</title>
+{% endblock title %}
+
+{% set highlight = 'addcategory' %}
+
+{% block content %}
+<div class="col py-3" style="background-color:#00AD83">
+    <h3 style="color:white; text-align: center;">Add category</h3>
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card shadow-lg bg-white rounded">
+            <form action="/addcategory" method="POST">
+                <div class="card-header" style="text-align: center;">
+                    <span style="display:inline-flex"><h4>New Category</h4><img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/category_add.webp" style=" margin-left:10px; width:30px; height:30px"></span>
+                    <span style="display:inline-flex"><h5>Include a category called 'recurring' if you want to use recurring expenses</h5></span>
+
+                </div>
+                <div class="card-body">
+                        <div class="mb-3">
+                        <label for="category" class="form-label">Category Name: </label>
+                        <input type="text" class="form-control" name="category" id="category"></input>
+                        </div>
+                        <div class="mb-3">
+                        <label for="description" class="form-label">Description of Category: </label>
+                        <input type="text" class="form-control" name="description" id="description"></input>
+                        </div>
+                </div>
+                <div class="card-footer text-muted" style="text-align:center">
+                    <button type="submit" style="background-color:#00AD83; border-color:#00AD83; border-radius:5px;">Add category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

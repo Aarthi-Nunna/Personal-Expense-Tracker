@@ -1,0 +1,67 @@
+{% extends 'base_template.html' %}
+
+{% block title %}
+<title>View Recurring Expenses</title>
+{% endblock title %}
+
+{% set highlight = 'viewrecurring' %}
+
+{% block content %}
+<div class="col py-3" style="background-color:#00AD83">
+    <h4 style="color:red;">{{ msg }}</h4>
+    <h3 style="color:black; text-align: center;">Welcome Back! {{ email }}</h3>
+    <div class="d-flex justify-content-end">
+        <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/wallet_money.webp"
+            style="height: 30px; width:30px">
+        <h4 style="margin-left:10px;">Wallet Balance: <span><h5 style="display:inline"><i>{{wallet}}</i></h5></span></h4>
+        <a href="updatebalance"><img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/edit_pencil.png"
+            style="margin-left:5px; height: 30px; width:30px"></a>
+    </div>
+    <h3>Here are your expenses:</h3>
+    <div class="card-deck">
+        <!-- {% set count = 1 %} -->
+        {% for expense in expenses %}
+
+        <div class="card shadow-lg bg-white rounded" style="margin: 20px;width:20rem; height:20rem;">
+            <div class="card-header" style="text-align: center;">
+                <h4>Expense {{loop.index}}</h4>
+            </div>
+            <div class="card-body">
+                <h6 class="card-text">Amount Spent: <span style="color:#00AD83"> Rs {{expense[0]}}</span> 
+                    <br><br>Reason: <span style="color:#00AD83">{{expense[1]}}</span>
+                <!-- <br><br>Category: <span style="color:#00AD83">{{expense[3]}}</span></h6> -->
+                <br><br> <button type = "button" name = "{{expense[1]}}" onclick="removeExpense(name)"> Remove Expense </button>
+            </div>
+            <div class="card-footer text-muted" style="text-align:center">
+                <h6>Date on which Expense was initiated: <span style="color:#00AD83">{{expense[2]}}</span></h6>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock content %}
+
+{% block script %}
+<script>
+    function removeExpense(e) {
+        console.log("hello");
+        // e.preventDefault();
+        // group = window.prompt('Enter group name: ')
+        // console.log('PROMPT WINDOW SHOWN'+group);
+    
+        window.alert("cancelling " + e + " autorenewal");
+        const formData = new FormData();
+        formData.append("description", e);
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                window.location.reload        
+            }
+        }
+        xhttp.open("POST", "http://localhost:5000/removerecurring");
+        xhttp.send(formData);
+    }
+</script>
+{% endblock script %}

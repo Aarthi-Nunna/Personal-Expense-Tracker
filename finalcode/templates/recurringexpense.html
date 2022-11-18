@@ -1,0 +1,95 @@
+{% extends 'base_template.html' %}
+
+{% block title %}
+<title>Recurring Expense</title>
+{% endblock title %}
+
+{% set highlight = 'recurringexpense' %}
+
+{% block content %}
+<div class="col py-3" style="background-color:#00AD83">
+    <h3 style="color:white; text-align: center;">Add Recurring Expense</h3>
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card shadow-lg bg-white rounded">
+            <form action="/recurringexpense" method="POST">
+                <div class="card-header" style="text-align: center;">
+                    <span style="display:inline-flex"><h4>Expense Made</h4><img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/pay-15.png" style=" margin-left:10px; width:30px; height:30px"></span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="amountspent" class="form-label">Amount Spent: (Rs) </label>
+                        <input type="number" class="form-control" name="amountspent" id="amountspent" placeholder="100.00" required>
+                        </div>
+                        <div class="mb-3">
+                        <label for="expensecategory" class="form-label">Expense Category: </label>
+                        <select name="category" id="category" class="form-control" placeholder="Select a category">
+                            <option value="">Select a category</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat[0] }}">{{ cat[1] }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                        <div class="mb-3">
+                        <label for="date" class="form-label">Date of Expense: </label>
+                        <input type="date" class="form-control" name="date" id="date" required></input>
+                        </div>
+                        <div class="mb-3">
+                        <label for="description" class="form-label">Description of Expense: </label>
+                        <input type="text" class="form-control" name="description" id="description"></input>
+                        </div>
+                        <!-- <div class="mb-3">
+                        <label for="duration" class="form-label">Number of autorenewals (in months) </label>
+                        <input type="text" class="form-control" name="autorenewals" id="autorenewals"></input>
+                        </div> -->
+                        <!-- <div class="mb-3"> -->
+                        <!-- <label for="group" class="form-label">Group(if needed): </label> -->
+                        <!-- <div title="New group" style="float:right" value="Create group" onclick="addGroup()">ADD GROUP</div><br/>
+                        
+                        <select name="group" id="group" class="form-control">
+                            <option value="">Select existing group</option>
+                            {% for group in groups %}
+                                <option value="{{ group[0] }}">{{ group[1] }}</option>
+                            {% endfor %}
+                        </select>
+                        </div> -->
+                <!-- </div> -->
+                <div class="card-footer text-muted" style="text-align:center">
+                    <button type="submit" value="submit" style="background-color:#00AD83; border-color:#00AD83; border-radius:5px;">Submit Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+    <script>
+        function addGroup(e) {
+            // e.preventDefault();
+            group = window.prompt('Enter group name: ')
+            console.log('PROMPT WINDOW SHOWN'+group);
+
+            const formData = new FormData();
+            formData.append("groupname", group);
+
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var groupid= JSON.parse(this.responseText);
+                    console.log(groupid);
+                    // create option using DOM
+                    const newOption = document.createElement('option');
+                    const optionText = document.createTextNode(groupid['groupname']);
+                    newOption.appendChild(optionText);
+                    newOption.setAttribute('value',groupid['groupID']); 
+                    const selectDropdown = document.getElementById('group');
+                    selectDropdown.appendChild(newOption);
+                    console.log('GROUPID :'+ groupid['groupID']);
+                }
+            }
+            xhttp.open("POST", "http://localhost:5000/addgroup");
+            xhttp.send(formData);
+        }
+        document.querySelector('#date').valueAsDate = new Date();
+    </script>
+{% endblock script %}

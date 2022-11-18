@@ -1,0 +1,48 @@
+{% extends 'base_template.html' %}
+
+{% block title %}
+<title>Dashboard</title>
+{% endblock title %}
+
+{% set highlight = 'dashboard' %}
+
+{% block content %}
+<div class="col py-3" style="background-color:#00AD83">
+    <h4 style="color:red;">{{ msg }}</h4>
+    <h3 style="color:black; text-align: center;">Welcome Back! {{ email }}</h3>
+    <div class="d-flex justify-content-end">
+        <img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/wallet_money.webp"
+            style="height: 30px; width:30px">
+        <h4 style="margin-left:10px;">Wallet Balance: <span><h5 style="display:inline"><i>{{wallet}}</i></h5></span></h4>
+        <a href="updatebalance"><img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/edit_pencil.png"
+            style="margin-left:5px; height: 30px; width:30px"></a>
+    </div>
+    <h3>Here are your expenses:</h3>
+    <div class="card-deck">
+        {% for expense in expenses %}
+        <div class="card shadow-lg bg-white rounded" style="margin: 20px;width:20rem; height:20rem;">
+            <div class="card-header" style="text-align: center;">
+                <h4>Expense {{loop.index}}</h4>
+            </div>
+            <div class="card-body">
+                <h6 class="card-text">
+                    Amount Spent: 
+                    <span style="color:#00AD83"> Rs {{expense['EXPENSE_AMOUNT']}}</span> 
+                    <br><br>
+                    Description: 
+                    <span style="color:#00AD83">{{expense['DESCRIPTION']}}</span>
+                    <br><br>
+                    Category: 
+                    <span style="color:#00AD83">{{expense['CATEGORY_NAME']}}</span>
+                </h6>
+                <a href="/modifyexpense?expenseid={{expense['EXPENSEID']}}">Modify</a>
+            </div>
+            <div class="card-footer text-muted" style="text-align:center">
+                <h6>Date on which Expense was made: <span style="color:#00AD83">{{expense['DATE']}}</span></h6>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock content %}

@@ -1,0 +1,33 @@
+{% extends 'base_template.html' %}
+
+{% block title %}
+<title>Update Balance</title>
+{% endblock title %}
+
+{% block content %}
+<div class="col py-3" style="background-color:#00AD83">
+    <h3 style="color:white; text-align: center;">Update Balance</h3>
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card shadow-lg bg-white rounded">
+            <form action="/updatebalance" method="POST">
+                <div class="card-header" style="text-align: center;">
+                    <span style="display:inline-flex"><h4>Wallet Balance</h4><img src="https://s3.jp-tok.cloud-object-storage.appdomain.cloud/personalexpensetrackercapd/wallet_money.webp" style=" margin-left:10px; width:30px; height:30px"></span>
+                </div>
+                <div class="card-body">
+                        <div class="mb-3">
+                        <label for="category" class="form-label">Current Balance: </label>
+                        <input type="text" value={{wallet}} readonly>
+                        </div>
+                        <div class="mb-3">
+                        <label for="description" class="form-label">New Balance: </label>
+                        <input type="text" class="form-control" name="balanceupdated" id="balanceupdated"></input>
+                        </div>
+                </div>
+                <div class="card-footer text-muted" style="text-align:center">
+                    <button type="submit" style="background-color:#00AD83; border-color:#00AD83; border-radius:5px;">Update Balance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

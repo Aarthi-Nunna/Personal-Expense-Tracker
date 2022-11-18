@@ -1,0 +1,37 @@
+{% extends 'base_template.html' %}
+
+{% block title %}
+<title>Analysis</title>
+{% endblock title %}
+
+{% set highlight = 'analysis' %}
+
+{% block content %}
+<div class="col-auto px-0 col-lg-10 col-md-6 col-sm-4">
+  <div class="card min-vh-100" style="background-color: #00ad83">
+    <h4 class="card-header">Analysis of my expenses</h4>
+    <div class="card-body">
+      <div class="row flex-nowrap">
+        <div class="col col-lg-5 col-md-3 px-4" style="background-color: #00ad83">
+          <img
+            id="picture"
+            src="data:image/jpeg;base64,{{ img_data1 }}"
+          />
+        </div>
+        <div class="col col-lg-5 col-md-3 px-4" style="background-color: #00ad83">
+          <img
+            id="picture"
+            src="data:image/jpeg;base64,{{ img_data2 }}"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script type="text/javascript">
+  function generate_graph1() {}
+</script>
+{% endblock script %}
